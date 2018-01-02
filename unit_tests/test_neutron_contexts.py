@@ -156,6 +156,7 @@ class TestNeutronGatewayContext(CharmTestCase):
                  'enable-l3ha': 'True',
                  'network-device-mtu': 9000,
                  'dns-domain': 'openstack.example.'}
+        self.test_config.set('ovs-vsctl-timeout', 23)
         self.test_config.set('plugin', 'ovs')
         self.test_config.set('debug', False)
         self.test_config.set('verbose', True)
@@ -174,7 +175,8 @@ class TestNeutronGatewayContext(CharmTestCase):
         _rget.side_effect = lambda *args, **kwargs: rdata
         _secret.return_value = 'testsecret'
         ctxt = neutron_contexts.NeutronGatewayContext()()
-        self.assertEquals(ctxt, {
+        self.assertEqual(ctxt, {
+            'ovs_vsctl_timeout': 23,
             'shared_secret': 'testsecret',
             'enable_dvr': True,
             'enable_l3ha': True,
@@ -231,7 +233,8 @@ class TestNeutronGatewayContext(CharmTestCase):
         _rget.side_effect = lambda *args, **kwargs: rdata
         _secret.return_value = 'testsecret'
         ctxt = neutron_contexts.NeutronGatewayContext()()
-        self.assertEquals(ctxt, {
+        self.assertEqual(ctxt, {
+            'ovs_vsctl_timeout': 10,
             'shared_secret': 'testsecret',
             'enable_dvr': True,
             'enable_l3ha': True,

@@ -973,6 +973,56 @@ class NeutronGatewayBasicDeployment(OpenStackAmuletDeployment):
         u.log.debug('Deleting neutron network...')
         self.neutron.delete_network(network['id'])
 
+    def test_410_ovs_timeout_ovs(self):
+        """Check ovs_timeout settings in ovs_agent.ini"""
+        if self._get_openstack_release() >= self.trusty_mitaka:
+            unit = self.neutron_gateway_sentry
+            expected = '123'
+            set_default = {'ovs-vsctl-timeout': '60'}
+            set_alternate = {'ovs-vsctl-timeout': expected}
+            self.d.configure('neutron-gateway', set_alternate)
+            time.sleep(60)
+            self._auto_wait_for_status(exclude_services=self.exclude_services)
+            config = u._get_config(
+                unit,
+                '/etc/neutron/plugins/ml2/openvswitch_agent.ini')
+            timeout = config.get('DEFAULT', 'ovs_vsctl_timeout')
+
+            if timeout != expected:
+                msg = str("ovs-vsctl-timeout not expected value in "
+                          "openvswitch_agent.ini: "
+                          "{} != {}".format(timeout, expected))
+                amulet.raise_status(amulet.FAIL, msg=msg)
+            u.log.debug('Setting ovs-vsctl-timeout back to {}'.format(
+                set_default['ovs-vsctl-timeout']))
+            self.d.configure('neutron-gateway', set_default)
+            u.log.debug('OK')
+
+    def test_411_ovs_timeout_l3(self):
+        """Check ovs_timeout settings in ovs_agent.ini"""
+        if self._get_openstack_release() >= self.xenial_newton:
+            unit = self.neutron_gateway_sentry
+            expected = '123'
+            set_default = {'ovs-vsctl-timeout': '60'}
+            set_alternate = {'ovs-vsctl-timeout': expected}
+            self.d.configure('neutron-gateway', set_alternate)
+            time.sleep(60)
+            self._auto_wait_for_status(exclude_services=self.exclude_services)
+            config_l3 = u._get_config(
+                unit,
+                '/etc/neutron/l3_agent.ini')
+            timeout_l3 = config.get('DEFAULT', 'ovs_vsctl_timeout')
+
+            if timeout_l3 != expected:
+                msg = str("ovs-vsctl-timeout not expected value in "
+                          "l3_agent.ini: "
+                          "{} != {}".format(timeout, expected))
+                amulet.raise_status(amulet.FAIL, msg=msg)
+            u.log.debug('Setting ovs-vsctl-timeout back to {}'.format(
+                set_default['ovs-vsctl-timeout']))
+            self.d.configure('neutron-gateway', set_default)
+            u.log.debug('OK')
+
     def test_900_restart_on_config_change(self):
         """Verify that the specified services are restarted when the
         config is changed."""

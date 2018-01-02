@@ -262,6 +262,11 @@ options:
     description: |
       Default multicast port number that will be used to communicate between
       HA Cluster nodes.
+  ovs-vsctl-timeout:
+    type: int
+    default: 10
+    description: |
+      Timeout in seconds for ovs-vsctl commands.
   # Monitoring config
   nagios_context:
     type: string
